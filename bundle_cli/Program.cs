@@ -4,7 +4,9 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 
-var bundleCommand = new Command("bundle", "bundle code file to a single code file");
+var bundleCommand = new Command(
+    "bundle", "bundle code file to a single code file"
+);
 
 var languageOption = new Option<string>(
     "--language",
@@ -13,6 +15,7 @@ var languageOption = new Option<string>(
 {
     IsRequired = true
 };
+
 bundleCommand.AddOption(languageOption);
 
 bundleCommand.SetHandler((string language) =>
@@ -20,10 +23,10 @@ bundleCommand.SetHandler((string language) =>
     try
     {
         string[] validExtensions = language.ToLower() == "all"
-            ? new string[] { ".cs", ".js", ".py", ".java", ".html", ".css" } // כל סוגי הקבצים (ניתן להרחיב אם צריך)
+            ? new string[] { ".cs", ".js", ".py", ".java", ".html", ".css" }
             : GetExtensionsForLanguage(language.ToLower());
 
-        // נתיב לתיקייה הנוכחית (אפשר לשנות לפי הצורך)
+        // נתיב לתיקייה הנוכחית
         string directoryPath = Directory.GetCurrentDirectory();
 
         // קבלת כל הקבצים בתיקייה הנוכחית, שמתאימים להרחבות שבחרנו
@@ -35,7 +38,7 @@ bundleCommand.SetHandler((string language) =>
         if (!filesToBundle.Any())
         {
             Console.WriteLine("No files found matching the specified languages.");
-            return;
+            //return;
         }
 
         // יצירת שם קובץ חדש עבור ה-bundle
@@ -58,7 +61,7 @@ bundleCommand.SetHandler((string language) =>
     {
         Console.WriteLine($"ERROR: {ex.Message}");
     }
-});
+}, languageOption);
 
 // פונקציה שמחזירה את הסיומות המתאימות לשפות תכנות
 string[] GetExtensionsForLanguage(string language)
