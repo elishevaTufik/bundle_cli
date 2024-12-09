@@ -5,7 +5,8 @@ using System.IO;
 using System.Linq;
 
 var bundleCommand = new Command(
-    "bundle", "bundle code file to a single code file"
+    "cmd", 
+    "bundle code files to a single code file"
 );
 
 var languageOption = new Option<string>(
@@ -13,7 +14,7 @@ var languageOption = new Option<string>(
     "Specify the programming languages to include in the bundle. Use 'all' for all files."
 )
 {
-    IsRequired = true
+    IsRequired = true,
 };
 
 bundleCommand.AddOption(languageOption);
@@ -23,7 +24,7 @@ bundleCommand.SetHandler((string language) =>
     try
     {
         string[] validExtensions = language.ToLower() == "all"
-            ? new string[] { ".cs", ".js", ".py", ".java", ".html", ".css" }
+            ? new string[] { ".cs", ".js", ".py", ".java", ".html", ".css", ".ipynb" }
             : GetExtensionsForLanguage(language.ToLower());
 
         // נתיב לתיקייה הנוכחית
@@ -38,7 +39,7 @@ bundleCommand.SetHandler((string language) =>
         if (!filesToBundle.Any())
         {
             Console.WriteLine("No files found matching the specified languages.");
-            //return;
+            return;
         }
 
         // יצירת שם קובץ חדש עבור ה-bundle
@@ -50,17 +51,20 @@ bundleCommand.SetHandler((string language) =>
                 // קריאת תוכן כל קובץ והדפסתו לקובץ הפלט
                 var content = File.ReadAllText(file);
                 outputFile.WriteLine($"// File: {Path.GetFileName(file)}");
+                outputFile.WriteLine();
                 outputFile.WriteLine(content);
-                outputFile.WriteLine(); // השארת רווח בין הקבצים
+                outputFile.WriteLine();
             }
         }
 
         Console.WriteLine($"Bundle created successfully. Output file: {outputFileName}");
     }
+    
     catch (Exception ex)
     {
         Console.WriteLine($"ERROR: {ex.Message}");
     }
+
 }, languageOption);
 
 // פונקציה שמחזירה את הסיומות המתאימות לשפות תכנות
@@ -70,10 +74,13 @@ string[] GetExtensionsForLanguage(string language)
     {
         "csharp" => new string[] { ".cs" },
         "javascript" => new string[] { ".js" },
-        "python" => new string[] { ".py" },
+        "python" => new string[] { ".ipynb" },
         "java" => new string[] { ".java" },
         "html" => new string[] { ".html" },
         "css" => new string[] { ".css" },
+        "c" => new string[] { ".c" },
+        "c++" => new string[] { ".cpp" },
+
         _ => throw new ArgumentException("Unsupported language")
     };
 }
