@@ -22,10 +22,17 @@ var languageOption = new Option<string>(
     IsRequired = true,
 };
 
+
+var includeSourceOption = new Option<bool>(
+    "--include-source",
+    "Include the source code file path as a comment in the bundle"
+);
+
 bundleCommand.AddOption(languageOption);
 bundleCommand.AddOption(outputOption);
+bundleCommand.AddOption(includeSourceOption);
 
-bundleCommand.SetHandler((string language, FileInfo output) =>
+bundleCommand.SetHandler((string language, FileInfo output, bool includeSource) =>
 {
     try
     {
@@ -54,9 +61,15 @@ bundleCommand.SetHandler((string language, FileInfo output) =>
         {
             foreach (var file in filesToBundle)
             {
-                // קריאת תוכן כל קובץ והדפסתו לקובץ הפלט
+                // If the flag is true, include the source file path as a comment
+                if (includeSource)
+                {
+                    outputFile.WriteLine($"// Source file: {Path.GetRelativePath(directoryPath, file)}");
+                }
+
+                // Read the content of each file and write it to the output file
                 var content = File.ReadAllText(file);
-                outputFile.WriteLine($"// File: {Path.GetFileName(file)}");
+                //outputFile.WriteLine($"// File: {Path.GetFileName(file)}");
                 outputFile.WriteLine();
                 outputFile.WriteLine(content);
                 outputFile.WriteLine();
@@ -68,12 +81,12 @@ bundleCommand.SetHandler((string language, FileInfo output) =>
 
     catch (DirectoryNotFoundException ex)
     {
-        Console.WriteLine("ERROR : invalid path");
+        Console.WriteLine($"ERROR : invalid path {ex.Message}");
     }
 
     catch (NullReferenceException ex)
     {
-        Console.WriteLine($"error!!!!!!!!!!!!: {ex.Message}");
+        Console.WriteLine($"ERROR : {ex.Message}");
     }
 
     catch (Exception ex)
@@ -81,7 +94,7 @@ bundleCommand.SetHandler((string language, FileInfo output) =>
         Console.WriteLine($"An error occurred: {ex.Message}");
     }
 
-}, languageOption, outputOption);
+}, languageOption, outputOption, includeSourceOption);
 
 // פונקציה שמחזירה את הסיומות המתאימות לשפות תכנות
 string[] GetExtensionsForLanguage(string language)
