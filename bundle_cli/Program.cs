@@ -9,6 +9,11 @@ var bundleCommand = new Command(
     "bundle code files to a single code file"
 );
 
+var outputOption = new Option<FileInfo>(
+    "--output",
+    "Specify the output file path"
+);
+
 var languageOption = new Option<string>(
     "--language",
     "Specify the programming languages to include in the bundle. Use 'all' for all files."
@@ -18,8 +23,9 @@ var languageOption = new Option<string>(
 };
 
 bundleCommand.AddOption(languageOption);
+bundleCommand.AddOption(outputOption);
 
-bundleCommand.SetHandler((string language) =>
+bundleCommand.SetHandler((string language, FileInfo output) =>
 {
     try
     {
@@ -43,7 +49,7 @@ bundleCommand.SetHandler((string language) =>
         }
 
         // יצירת שם קובץ חדש עבור ה-bundle
-        string outputFileName = "bundle_output.txt";
+        string outputFileName = output.FullName;
         using (var outputFile = new StreamWriter(outputFileName))
         {
             foreach (var file in filesToBundle)
@@ -59,13 +65,23 @@ bundleCommand.SetHandler((string language) =>
 
         Console.WriteLine($"Bundle created successfully. Output file: {outputFileName}");
     }
-    
-    catch (Exception ex)
+
+    catch (DirectoryNotFoundException ex)
     {
-        Console.WriteLine($"ERROR: {ex.Message}");
+        Console.WriteLine("ERROR : invalid path");
     }
 
-}, languageOption);
+    catch (NullReferenceException ex)
+    {
+        Console.WriteLine($"error!!!!!!!!!!!!: {ex.Message}");
+    }
+
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred: {ex.Message}");
+    }
+
+}, languageOption, outputOption);
 
 // פונקציה שמחזירה את הסיומות המתאימות לשפות תכנות
 string[] GetExtensionsForLanguage(string language)
@@ -80,6 +96,7 @@ string[] GetExtensionsForLanguage(string language)
         "css" => new string[] { ".css" },
         "c" => new string[] { ".c" },
         "c++" => new string[] { ".cpp" },
+        "c#" => new string[] { ".cs" },
 
         _ => throw new ArgumentException("Unsupported language")
     };
