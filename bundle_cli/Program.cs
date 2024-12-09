@@ -34,13 +34,19 @@ var sortOption = new Option<string>(
     "Sort files by 'name' (default) or 'type' (by file extension)"
 );
 
+var removeOption = new Option<bool>(
+    "--remove",
+    "Remove empty lines from the source code before bundling"
+);
+
+
 bundleCommand.AddOption(languageOption);
 bundleCommand.AddOption(outputOption);
 bundleCommand.AddOption(includeSourceOption);
 bundleCommand.AddOption(sortOption);
 
 
-bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, string sort) =>
+bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, string sort, bool remove) =>
 {
     try
     {
@@ -84,7 +90,16 @@ bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, 
 
                 // Read the content of each file and write it to the output file
                 var content = File.ReadAllText(file);
-                //outputFile.WriteLine($"// File: {Path.GetFileName(file)}");
+
+                // If removeflag is true, remove empty lines from the content
+                if (remove)
+                {
+                    content = string.Join(Environment.NewLine, content
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.None)
+                        .Where(line => !string.IsNullOrWhiteSpace(line)));
+                }
+
+                // Write the content to the output file
                 outputFile.WriteLine();
                 outputFile.WriteLine(content);
                 outputFile.WriteLine("----------------------------------------------");
@@ -110,7 +125,7 @@ bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, 
         Console.WriteLine($"An error occurred: {ex.Message}");
     }
 
-}, languageOption, outputOption, includeSourceOption, sortOption);
+}, languageOption, outputOption, includeSourceOption, sortOption, removeOption);
 
 // Function to return valid extensions for different languages
 string[] GetExtensionsForLanguage(string language)
