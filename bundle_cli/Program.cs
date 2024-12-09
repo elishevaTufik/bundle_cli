@@ -29,6 +29,7 @@ var includeSourceOption = new Option<bool>(
 
 var sortOption = new Option<string>(
     new string[] { "--sort", "-s" },
+    () => "name",
     "Sort files by 'name' (default) or 'type' (by file extension)"
 );
 
@@ -63,10 +64,10 @@ createRspCommand.SetHandler(async () =>
         // Ask for user input for each option
         Console.WriteLine("Enter the desired parameters for the bundle command:");
 
-        Console.Write("Language (e.g., csharp, javascript, all): ");
+        Console.Write("Language (csharp, javascript, python, java, html, css, c, c++, c#, all): ");
         string language = Console.ReadLine();
 
-        Console.Write("Output file path (e.g., output.cs): ");
+        Console.Write("Output file path or Output file name");
         string outputPath = Console.ReadLine();
 
         Console.Write("Include source (true/false): ");
