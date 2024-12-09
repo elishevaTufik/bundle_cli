@@ -28,11 +28,19 @@ var includeSourceOption = new Option<bool>(
     "Include the source code file path as a comment in the bundle"
 );
 
+
+var sortOption = new Option<string>(
+    "--sort",
+    "Sort files by 'name' (default) or 'type' (by file extension)"
+);
+
 bundleCommand.AddOption(languageOption);
 bundleCommand.AddOption(outputOption);
 bundleCommand.AddOption(includeSourceOption);
+bundleCommand.AddOption(sortOption);
 
-bundleCommand.SetHandler((string language, FileInfo output, bool includeSource) =>
+
+bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, string sort) =>
 {
     try
     {
@@ -40,22 +48,29 @@ bundleCommand.SetHandler((string language, FileInfo output, bool includeSource) 
             ? new string[] { ".cs", ".js", ".py", ".java", ".html", ".css", ".ipynb" }
             : GetExtensionsForLanguage(language.ToLower());
 
-        // נתיב לתיקייה הנוכחית
+        // Get the current directory path
         string directoryPath = Directory.GetCurrentDirectory();
 
-        // קבלת כל הקבצים בתיקייה הנוכחית, שמתאימים להרחבות שבחרנו
+        // Get all the files in the current directory matching the selected extensions
         var filesToBundle = Directory.GetFiles(directoryPath)
             .Where(file => validExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
             .ToList();
 
-        // אם לא נמצאו קבצים מתאימים, להוציא הודעת שגיאה
+        // If no files are found, print an error message
         if (!filesToBundle.Any())
         {
             Console.WriteLine("No files found matching the specified languages.");
             return;
         }
 
-        // יצירת שם קובץ חדש עבור ה-bundle
+        // Sort files based on the user's choice
+        filesToBundle = sort.ToLower() switch
+        {
+            "type" => filesToBundle.OrderBy(f => Path.GetExtension(f)).ThenBy(f => Path.GetFileName(f)).ToList(),
+            _ => filesToBundle.OrderBy(f => Path.GetFileName(f)).ToList()  // Default sort by file name
+        };
+
+        // Create the output file
         string outputFileName = output.FullName;
         using (var outputFile = new StreamWriter(outputFileName))
         {
@@ -72,6 +87,7 @@ bundleCommand.SetHandler((string language, FileInfo output, bool includeSource) 
                 //outputFile.WriteLine($"// File: {Path.GetFileName(file)}");
                 outputFile.WriteLine();
                 outputFile.WriteLine(content);
+                outputFile.WriteLine("----------------------------------------------");
                 outputFile.WriteLine();
             }
         }
@@ -94,9 +110,9 @@ bundleCommand.SetHandler((string language, FileInfo output, bool includeSource) 
         Console.WriteLine($"An error occurred: {ex.Message}");
     }
 
-}, languageOption, outputOption, includeSourceOption);
+}, languageOption, outputOption, includeSourceOption, sortOption);
 
-// פונקציה שמחזירה את הסיומות המתאימות לשפות תכנות
+// Function to return valid extensions for different languages
 string[] GetExtensionsForLanguage(string language)
 {
     return language switch
@@ -115,7 +131,7 @@ string[] GetExtensionsForLanguage(string language)
     };
 }
 
-var rootCommand = new RootCommand("Root Command for file bundler ");
+var rootCommand = new RootCommand("Root Command for file bundler");
 
 rootCommand.AddCommand(bundleCommand);
 
