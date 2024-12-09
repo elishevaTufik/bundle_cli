@@ -27,9 +27,3 @@ Bundles code files from selected programming languages into a single file.
 
 Prompts the user for all the necessary options and generates a `.rsp` file that contains the full command. The `.rsp` file can later be executed with `dotnet @fileName.rsp`.
 
-## Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://your-repository-url.git
-   cd your-project-directory
