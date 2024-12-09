@@ -39,14 +39,21 @@ var removeOption = new Option<bool>(
     "Remove empty lines from the source code before bundling"
 );
 
+var authorOption = new Option<string>(
+    "--author",
+    "Specify the author of the bundle (this will be added as a comment at the top of the bundle)"
+);
+
 
 bundleCommand.AddOption(languageOption);
 bundleCommand.AddOption(outputOption);
 bundleCommand.AddOption(includeSourceOption);
 bundleCommand.AddOption(sortOption);
+bundleCommand.AddOption(removeOption);
+bundleCommand.AddOption(authorOption);
 
 
-bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, string sort, bool remove) =>
+bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, string sort, bool remove, string author) =>
 {
     try
     {
@@ -80,6 +87,15 @@ bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, 
         string outputFileName = output.FullName;
         using (var outputFile = new StreamWriter(outputFileName))
         {
+            // If author is provided, write the author's name as a comment at the top
+
+            if (!string.IsNullOrEmpty(author))
+            {
+                outputFile.WriteLine($"// Author: {author}");
+                outputFile.WriteLine($"// Date: {DateTime.Now:yyyy-MM-dd}");
+                outputFile.WriteLine();  
+            }
+
             foreach (var file in filesToBundle)
             {
                 // If the flag is true, include the source file path as a comment
@@ -91,7 +107,7 @@ bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, 
                 // Read the content of each file and write it to the output file
                 var content = File.ReadAllText(file);
 
-                // If removeflag is true, remove empty lines from the content
+                // If remove flag is true, remove empty lines from the content
                 if (remove)
                 {
                     content = string.Join(Environment.NewLine, content
@@ -125,7 +141,7 @@ bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, 
         Console.WriteLine($"An error occurred: {ex.Message}");
     }
 
-}, languageOption, outputOption, includeSourceOption, sortOption, removeOption);
+}, languageOption, outputOption, includeSourceOption, sortOption, removeOption, authorOption);
 
 // Function to return valid extensions for different languages
 string[] GetExtensionsForLanguage(string language)
