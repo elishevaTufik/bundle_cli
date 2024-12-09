@@ -10,35 +10,35 @@ var bundleCommand = new Command(
 );
 
 var outputOption = new Option<FileInfo>(
-    "--output",
-    "Specify the output file path"
+  new string[] { "--output", "-o" },
+  "Specify the output file path"
 );
 
 var languageOption = new Option<string>(
-    "--language",
+    new string[] { "--language", "-l" },
     "Specify the programming languages to include in the bundle. Use 'all' for all files."
 )
 {
-    IsRequired = true,
+    IsRequired = true
 };
 
 var includeSourceOption = new Option<bool>(
-    "--include-source",
+    new string[] { "--include-source","-i" },
     "Include the source code file path as a comment in the bundle"
 );
 
 var sortOption = new Option<string>(
-    "--sort",
+    new string[] { "--sort", "-s" },
     "Sort files by 'name' (default) or 'type' (by file extension)"
 );
 
 var removeOption = new Option<bool>(
-    "--remove",
+    new string[] { "--remove", "-r" },
     "Remove empty lines from the source code before bundling"
 );
 
 var authorOption = new Option<string>(
-    "--author",
+    new string[] { "--author","a" },
     "Specify the author of the bundle (this will be added as a comment at the top of the bundle)"
 );
 
@@ -95,6 +95,7 @@ createRspCommand.SetHandler(async () =>
 
         Console.WriteLine($"Response file created successfully: {responseFileName}");
     }
+
     catch (Exception ex)
     {
         Console.WriteLine($"An error occurred: {ex.Message}");
@@ -173,6 +174,11 @@ bundleCommand.SetHandler((string language, FileInfo output, bool includeSource, 
         }
 
         Console.WriteLine($"Bundle created successfully. Output file: {outputFileName}");
+    }
+    
+    catch (UnauthorizedAccessException ex)
+    {
+        Console.WriteLine($"ERROR: Access denied to path: {ex.Message}");
     }
 
     catch (DirectoryNotFoundException ex)
