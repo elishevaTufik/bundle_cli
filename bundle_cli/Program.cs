@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 
 var bundleCommand = new Command(
-    "cmd", 
+    "bundle-files", 
     "bundle code files to a single code file"
 );
 
@@ -83,7 +83,7 @@ createRspCommand.SetHandler(async () =>
         string author = Console.ReadLine();
 
         // Generate the full command line based on user input
-        string commandLine = $"dotnet run --cmd --language {language} --output {outputPath} --include-source {includeSource} --sort {sort} --remove {remove}";
+        string commandLine = $"dotnet run --bundle-files --language {language} --output {outputPath} --include-source {includeSource} --sort {sort} --remove {remove}";
 
         if (!string.IsNullOrEmpty(author))
         {
